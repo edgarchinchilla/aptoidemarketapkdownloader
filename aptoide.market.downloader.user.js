@@ -1,29 +1,30 @@
 // ==UserScript==
-// @name			Aptoide Market (Direct) APK Downloader
-// @name:es			Descargador directo de Apps de Aptoide Market a su PC
+// @name		Aptoide Market (Direct) APK Downloader
+// @name:es		Descargador directo de Apps de Aptoide Market a su PC
 // @namespace		https://www.facebook.com/edgargerardo.chinchillamazate
 // @description 	Download Apps from Aptoide Market to your PC directly
 // @description:es	Descarga Apps desde Aptoide directamente a tu PC
-// @author			edgerch@live
-// @include			http://*.store.aptoide.com/*
-// @version			8.0a
-// @released        2014-10-10
-// @updated         2016-06-06
+// @author		edgerch@live
+// @include		http://*.store.aptoide.com/*
+// @version		8.0b
+// @released        	2014-10-10
+// @updated         	2016-06-06
 // @encoding		utf-8
-// @homepage		https://greasyfork.org/es/scripts/6952-aptoide-market-direct-apk-downloader
-// @updateURL		https://greasyfork.org/scripts/6952-aptoide-market-direct-apk-downloader/code/Aptoide%20Market%20(Direct)%20APK%20Downloader.user.js
-// @downloadURL		https://greasyfork.org/scripts/6952-aptoide-market-direct-apk-downloader/code/Aptoide%20Market%20(Direct)%20APK%20Downloader.user.js
-// @icon			http://upload.wikimedia.org/wikipedia/commons/3/37/Aptoide_Logo.png
-// @grant			metadata
-// @grant			GM_xmlhttpRequest
-// @license			Creative Commons Attribution License
+// @homepageURL		https://github.com/edgarchinchilla/aptoidemarketapkdownloader#readme
+// @supportURL		https://github.com/edgarchinchilla/aptoidemarketapkdownloader/issues
+// @updateURL		https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/aptoide.market.downloader.user.js
+// @downloadURL		https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/aptoide.market.downloader.user.js
+// @icon		http://upload.wikimedia.org/wikipedia/commons/3/37/Aptoide_Logo.png
+// @grant		metadata
+// @grant		GM_xmlhttpRequest
+// @license		Creative Commons Attribution License
 // ==/UserScript==
 
 // Updated & Enhanced by Edgar Gerardo Chinchilla Mazate
 // edgerch@live.com
-// 		https://greasyfork.org/es/scripts/6952-aptoide-market-direct-apk-downloader
+// 	https://greasyfork.org/es/scripts/6952-aptoide-market-direct-apk-downloader
 // Thanks to the creator of original script:
-//		Original Thread: http://userscripts-mirror.org/scripts/show/180436.html
+//	http://userscripts-mirror.org/scripts/show/180436.html
 
 /*
  * GLOBAL VARS
