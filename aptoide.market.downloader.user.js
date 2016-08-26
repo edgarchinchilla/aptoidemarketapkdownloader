@@ -1,23 +1,23 @@
 // ==UserScript==
-// @name		Aptoide Market (Direct) APK Downloader
-// @name:es		Descargador directo de Apps de Aptoide Market a su PC
-// @namespace		https://www.facebook.com/edgargerardo.chinchillamazate
-// @description 	Download Apps from Aptoide Market to your PC directly
-// @description:es	Descarga Apps desde Aptoide directamente a tu PC
-// @author		edgerch@live
-// @include		http://*.store.aptoide.com/*
-// @version		8.0b
-// @released        	2014-10-10
-// @updated         	2016-06-06
-// @encoding		utf-8
-// @homepageURL		https://github.com/edgarchinchilla/aptoidemarketapkdownloader#readme
-// @supportURL		https://github.com/edgarchinchilla/aptoidemarketapkdownloader/issues
-// @updateURL		https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/aptoide.market.downloader.user.js
-// @downloadURL		https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/aptoide.market.downloader.user.js
-// @icon		http://upload.wikimedia.org/wikipedia/commons/3/37/Aptoide_Logo.png
-// @grant		metadata
-// @grant		GM_xmlhttpRequest
-// @license		Creative Commons Attribution License
+// @name            Aptoide Market (Direct) APK Downloader
+// @name:es         Descargador directo de Apps de Aptoide Market a su PC
+// @namespace       https://www.facebook.com/edgargerardo.chinchillamazate
+// @description     Download Apps from Aptoide Market to your PC directly
+// @description:es  Descarga Apps desde Aptoide directamente a tu PC
+// @author          edgerch@live
+// @include         *.store.aptoide.com/*
+// @version         8.1a
+// @released        2014-10-10
+// @updated         2016-08-25
+// @encoding        utf-8
+// @homepageURL     https://github.com/edgarchinchilla/aptoidemarketapkdownloader#readme
+// @supportURL      https://github.com/edgarchinchilla/aptoidemarketapkdownloader/issues
+// @updateURL       https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/aptoide.market.downloader.user.js
+// @downloadURL     https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/aptoide.market.downloader.user.js
+// @icon            https://www.aptoide.com/includes/themes/2014/images/header/logo2.svg
+// @grant           metadata
+// @grant           GM_xmlhttpRequest
+// @license         Creative Commons Attribution License
 // ==/UserScript==
 
 // Updated & Enhanced by Edgar Gerardo Chinchilla Mazate
@@ -34,6 +34,7 @@ var rawJSON 			= null;
 var isMobile 			= false;
 var userLangCode 		= navigator.languages ? navigator.languages[0] : (navigator.language || navigator.userLanguage || navigator.browserLanguage);
 var url 				= window.location.toString().split('/');
+var protocol			= window.location.toString().split(':')[0];
 var src 				= document.documentElement.innerHTML;
 var md5 				= src.match(/MD5:<\/strong> [A-Za-z0-9]*/).toString().slice(14);
 var appVer 				= null;
@@ -44,6 +45,11 @@ var domainWebService 	= 'http://www.aptoide.com/webservices/getApkInfo/';
 /*
  * GLOBAL CHECKS
  */
+
+// Check the protocol and switch to http if https is currently used
+// NOTE: HTTPS is still not supported
+if (protocol == 'https')
+	{ window.location.href = window.location.toString().replace(/https/,'http'); }
 
 // Determine if we are in the mobile version of the site
 if (window.location.toString().match(/http:\/\/m\./))
@@ -273,6 +279,7 @@ var downloadButton = function() {
 downloadButton();
 
 /*	FUENTES/RECURSOS
+http://upload.wikimedia.org/wikipedia/commons/3/37/Aptoide_Logo.png
 http://www.javascripter.net/faq/rgbtohex.htm
 http://icons8.com/web-app/for/all/download
 http://dataurl.net/#dataurlmaker
