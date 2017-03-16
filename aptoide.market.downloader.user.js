@@ -6,9 +6,10 @@
 // @description:es  Descarga Apps desde Aptoide directamente a tu PC
 // @author          edgerch@live
 // @include         *.store.aptoide.com/*
-// @version         8.1b
+// @include         *.aptoide.com/*
+// @version         9.0
 // @released        2014-10-10
-// @updated         2017-02-14
+// @updated         2017-03-15
 // @encoding        utf-8
 // @homepageURL     https://github.com/edgarchinchilla/aptoidemarketapkdownloader#readme
 // @supportURL      https://github.com/edgarchinchilla/aptoidemarketapkdownloader/issues
@@ -30,63 +31,71 @@
  * GLOBAL VARS
  */
 
-var rawJSON             = null;
-var isMobile            = false;
-var userLangCode        = navigator.languages ? navigator.languages[0] : (navigator.language || navigator.userLanguage || navigator.browserLanguage);
-var url                 = window.location.toString().split('/');
-var protocol            = window.location.toString().split(':')[0];
-var src                 = document.documentElement.innerHTML;
-var md5                 = src.match(/MD5:<\/strong> [A-Za-z0-9]*/).toString().slice(14);
-var appVer              = null;
-var storeName           = null;
-var appState            = null;
-var domainWebService    = 'http://www.aptoide.com/webservices/getApkInfo/';
+var regEx1                  = null;
+var regEx2                  = null;
+var rawJSON                 = null;
+var isMobile                = false;
+var userLangCode            = navigator.languages ? navigator.languages[0] : (navigator.language || navigator.userLanguage || navigator.browserLanguage);
+var url                     = window.location.toString().split('/');
+var protocol                = window.location.toString().split(':')[0];
+var src                     = document.documentElement.innerHTML;
+var domainDownload          = 'http://pool.apk.aptoide.com/';
+var divAppDown              = null;
+var btnDownChild            = document.createElement('div');
+var loadingAnimationChild   = document.createElement('div');
+var btnJSONChild            = document.createElement('div');
+var btnStrings              = null;
+var md5                     = null;
+var appVer                  = null;
+var storeName               = null;
+var appState                = null;
+var appId                   = null;
+var appFileNameExtended     = null;
+var appObbFiles             = null;
+var apkDownloadURL          = null;
+var appJSONURL              = null;
+
+/*
+ * Aptoide API (v7)
+ */
+ // https://www.aptoide.com/webservices/docs/7/app/getMeta
+ // https://ws2.aptoide.com/api/7/getAppMeta?apk_id=<value>&app_id=<value>&package_name=<value>&store_name=<value>&apk_md5sum=<value>
+ // apk_id          Apk file ID.        +INT31          Example:    2422529
+ // app_id          Application ID.     +INT31          Example:    7306243
+ // package_name    Apk package name.   PACKAGE_NAME    Example:    "cm.aptoide.pt"
+ // store_name      Store name.         DOMAIN_LABEL    Example:    "apps"
+ // apk_md5sum      Apk file md5sum.    HEXADECIMAL     Example:    "aefde962dae50881d4353089fa8039f1"
+var domainWebService    = 'https://ws2.aptoide.com/api/7/getAppMeta?';
+
+/*
+ * Aptoide API (v3) - DEPRECATED
+ */
+ // https://www.aptoide.com/webservices/docs/3/getApkInfo
+ // https://webservices.aptoide.com/webservices/getApkInfo/<repo>/<apkid>/<apkversion>/<mode>
+ // repo    Repository name
+ // apkid   Application package ID (example: com.mystuff.android.myapp)
+ // apkversion  Application version (example: 1.4.2)
+ // mode    Return mode/format ('xml' or 'json')
 
 /*
  * GLOBAL CHECKS
  */
 
-// Check the protocol and switch to http if https is currently used
-// NOTE: HTTPS is still not supported
-if (protocol == 'https')
-    { window.location.href = window.location.toString().replace(/https/,'http'); }
-
 // Determine if we are in the mobile version of the site
-if (window.location.toString().match(/http:\/\/m\./))
-    { isMobile = true; }
-
-// Determine the Application version
+// Even if the URL in the browser ends with *aptoide.com, javascript retrieves *aptoide.com/
 try
-    { appVer = appVer = document.getElementsByClassName('app_meta')[(isMobile ? 2 : 0)].innerHTML.split("\n")[(isMobile ? 1 : 4)].match(/Versión:\s<\/b>([a-z]|[A-Z]|[0-9]|\.|[-]|[_])*/gm).toString().slice(13); }
+    {
+        regEx1 = new RegExp(protocol + ':\/\/[A-Za-z0-9.-_]*aptoide.com\/$', 'gi');
+        var mobileMatch = window.location.toString().match(regEx1) || [];
+        if (mobileMatch.length > 0) { isMobile = true; }
+        else
+        {
+            mobileMatch = window.location.toString().match(/aptoide.com\/[a-z]*\/[a-z]*\/[a-zA-Z0-9-_.]*/gi) || [];
+            if (mobileMatch.length == 0) { isMobile = true; }
+        }
+    }
 catch(err)
-    { appVer = appVer = document.getElementsByClassName('app_meta')[(isMobile ? 2 : 0)].innerHTML.split("\n")[(isMobile ? 1 : 4)].match(/Version:\s<\/b>([a-z]|[A-Z]|[0-9]|\.|[-]|[_])*/gm).toString().slice(13); }
-
-// Determine the store name
-if (isMobile)
-    { storeName = window.location.toString().match(/http:\/\/m\.[A-Za-z0-9-_]*\./i).toString().replace(/http:\/\/m./,'').replace(/.$/,''); }
-else
-    { storeName = window.location.toString().match(/http:\/\/[A-Za-z0-9-_]*\./i).toString().replace(/http:\/\//,'').replace(/.$/,''); }
-
-// Determine the App state
-if (isMobile)
-    { appState = src.match(/btn app_install [a-z]*/).toString().toLowerCase().split(' '); }
-else
-    { appState = src.match(/app_install [a-z]* [a-z]*/).toString().toLowerCase().split(' '); }
-
-/*
- * CONSTRUCT THE APK Links
- */
-
-// Update the download link to include the store
-var domainDownload = 'http://pool.apk.aptoide.com/' + storeName + '/';
-
-// construct the apk filename with the format 'nombreapp-xxx-xxxxxxxx-'
-var file = url[url.length-4].toString().replace(/\./g, '-').replace(/_/g, '-').toLowerCase() + '-' + url[url.length-3] + '-' + url[url.length-2] + '-';
-
-// APP Full download URL
-var apkDownloadURL = domainDownload + file + md5 + '.apk';
-// JSON URL, Format: nameofstore/name.of.app/version.of.app/json
-var appJSONURL = domainWebService + storeName + '/' + url[url.length-4].toString() + '/' + appVer + '/json';
+    { isMobile = false; }
 
 /*
  * STYLE & LANG STUFF
@@ -112,11 +121,96 @@ var langStrings = {
         fr      : { downloadAPK : 'Télécharger APK', viewJSON : 'Voir JSON' }
     };
 
+// Set the default loading animation
+loadingAnimationChild.innerHTML = '<img src="'+ icons.loading.imagen +'" />';
+
+// Set the lang strings for the current user language
+btnStrings = getLangStrings(userLangCode)
+
+/*
+ * APTOIDE DESKTOP AND MOBILE SPECIFIC BEHAVIOR
+ */
+
+// DESKTOP
+if (!isMobile)
+    {
+        // Get the App MD5
+        md5 = src.match(/MD5:<\/strong> [A-Za-z0-9]*/).toString().slice(14);
+        // Determine the store name
+        regEx1 = new RegExp(protocol + ':\/\/[A-Za-z0-9-_]*\.', 'gi');
+        regEx2 = new RegExp(protocol + ':\/\/', 'gi');
+        storeName = window.location.toString().match(regEx1).toString().replace(regEx2,'').replace(/.$/,'');
+        // Determine the Application version
+        appVer = document.getElementsByClassName('app_meta')[0].innerHTML.split("\n")[4].match(/<\/b>[a-zA-Z0-9-_.]*/gi).toString().split('>')[1].toString();
+        // Determine the App state
+        appState = src.match(/app_install [a-z]* [a-z]*/).toString().toLowerCase().split(' ');
+        appState = appState[appState.length-1].toString();
+        // Update the download link to include the store
+        domainDownload = domainDownload + storeName + '/';
+        // construct the apk filename with the format 'nombreapp-xxx-xxxxxxxx-'
+        appFileNameExtended = url[url.length-4].toString().replace(/\./g, '-').replace(/_/g, '-').toLowerCase() + '-' + url[url.length-3] + '-' + url[url.length-2] + '-';
+        // APP Full download URL
+        apkDownloadURL = domainDownload + appFileNameExtended + md5 + '.apk';
+        // JSON URL (App Metadata)
+        appJSONURL = domainWebService + "store_name=" + storeName + "&package_name=" + url[url.length-4].toString() + "&apk_md5sum=" + md5;
+        // Get the Aptoide Download Button Block
+        divAppDown = document.getElementsByClassName('app_install')[0];
+        // Remove all the current download buttons
+        while (divAppDown.hasChildNodes()) { divAppDown.removeChild(divAppDown.firstChild); }
+        btnDownChild.innerHTML = getButton(appState, apkDownloadURL, btnStrings.downloadAPK);
+        // Add the custom APK download button
+        divAppDown.appendChild(btnDownChild);
+        // Show a loading animation
+        divAppDown.appendChild(loadingAnimationChild);
+        // Read the App Information and Create the download buttons
+        getJSON(appJSONURL);
+    }
+// MOBILE
+else
+    {
+        var appMetaData = null;
+        // Determine the store name
+        storeName = getAllElementsWithAttribute('itemscope')[0].innerHTML.match(/"header__store-name">[a-zA-Z0-9-_.]*/gi).toString().split('>')[1].toString();
+        // Determine the Application version
+        appVer = document.getElementsByClassName('header__stats__item')[1].getElementsByTagName('span')[1].toString();
+        // Determine the App ID
+        appId = document.getElementsByClassName('aptweb-button--big')[0].getElementsByTagName('span')[0].innerHTML.match(/app_id=[0-9]*/gi).toString().split('=')[1];
+        // Determine the App state
+        appState = getAllElementsWithAttribute('itemscope')[0].innerHTML.match(/data-popup-badge="badge-[a-zA-Z0-9]*(?=")/gi).toString().split('-');
+        appState = appState[appState.length-1].toString();
+        // JSON URL (App Metadata)
+        appJSONURL = domainWebService + "store_name=" + storeName + "&app_id=" + appId;
+        // Get the Aptoide Download Button Block
+        divAppDown = document.getElementsByClassName('aptweb-button--big')[0];
+        // Remove all the current download buttons
+        while (divAppDown.hasChildNodes()) { divAppDown.removeChild(divAppDown.firstChild); }
+        // Show a loading animation
+        divAppDown.appendChild(loadingAnimationChild);
+        // Read the App Information and Create the download buttons
+        getJSON(appJSONURL);
+    }
+
 /*
  * PUBLIC FUNCTIONS
  */
+
+// Utilities
+function getAllElementsWithAttribute(attribute)
+{
+  var matchingElements = [];
+  var allElements = document.getElementsByTagName('*');
+  for (var i = 0, n = allElements.length; i < n; i++)
+  {
+    if (allElements[i].getAttribute(attribute) !== null)
+    {
+      // Element exists with attribute. Add to array.
+      matchingElements.push(allElements[i]);
+    }
+  }
+  return matchingElements;
+}
     
-// Generador de las cadenas de idioma
+// Lang strings generator
 function getLangStrings(langCode) {
     var buttonStrings = new Object();
     
@@ -192,6 +286,7 @@ function getButton(currentState, downloadURL, appDownloadString) {
     var col         = null;
     var img         = null;
     var mobileBtn   = null;
+    var retButton   = null;
 
     if (currentState == 'trusted') {
         col = icons.generic.color;
@@ -213,73 +308,66 @@ function getButton(currentState, downloadURL, appDownloadString) {
     }
     
     // Formated download button
-    return '<style> .icon { width: 20px; height: 20px; } .lnk { color: ' + col + '; text-decoration: none; } .lnk a:link { color: ' + col + '; text-decoration: none; } .lnk a:visited { color: ' + col + '; text-decoration: none; } .lnk a:hover { color: #000000; text-decoration: none !important; }</style><font size="4" color="#00FF33"><a class="lnk ' + mobileBtn + '" id="downBtn" href="' + downloadURL + '" download="' + url[url.length-1] + ' ' + appVer + '.apk' + '"><img class="icon" src="'+ img +'" />&nbsp;' + appDownloadString + '&nbsp;<div class="app_install_badge"></div></a></font>';
+    if (isMobile)
+        retButton = '<style> .icon { width: 20px; height: 20px; } .lnk { color: ' + col + '; text-decoration: none; } .lnk a:link { color: ' + col + '; text-decoration: none; } .lnk a:hover { color: #000000; text-decoration: none !important; }</style><span><a class="lnk" href="' + downloadURL + '" download="' + url[url.length-1] + ' ' + appVer + '.apk' + '"><img class="icon" src="'+ img +'" />&nbsp;' + appDownloadString + '</a></span>';
+    else
+        retButton = '<style> .icon { width: 20px; height: 20px; } .lnk { color: ' + col + '; text-decoration: none; } .lnk a:link { color: ' + col + '; text-decoration: none; } .lnk a:hover { color: #000000; text-decoration: none !important; }</style><font size="4" color="#00FF33"><a class="lnk" href="' + downloadURL + '" download="' + url[url.length-1] + ' ' + appVer + '.apk' + '"><img class="icon" src="'+ img +'" />&nbsp;' + appDownloadString + '&nbsp;<div class="app_install_badge"></div></a></font>';
+
+    return retButton;
 }
 
 // Get the App JSON using Greasemonkey's CORS
-function getJSON() {
-    var ret = GM_xmlhttpRequest({
+function getJSON(jsonURL) {
+    var xmlCall = GM_xmlhttpRequest({
       method: "GET",
-      url: appJSONURL,
+      headers: {"Accept": "application/json"},
+      ignoreCache: true,
+      url: jsonURL,
       onload: function(res) {
-        rawJSON = JSON.parse(res.responseText);
+        rawJSON =JSON.parse(res.responseText);
+        createJSONButton();
+      },
+      onerror: function(res) {
+        rawJSON = JSON.parse('{ "error": { "message": "' + res.responseText + '" } }');
+        createJSONButton();
       }
     });
 }
-    
+
 /*
- * CREATE THE APK DOWNLOAD ELEMENT (FOR CURRENT STATE)
+ * CREATE THE JSON LINK IF THE APP HAS AN OBB FILE
  */
 
-// Agregamos un botón de descarga al sitio en el apartado del botón "Instalar"
-var downloadButton = function() {
-    var divAppDown      = null;
-    var btnDownChild    = document.createElement('div');
-    var btnStrings      = getLangStrings(userLangCode);
-
-    if(isMobile)
-        { divAppDown = document.getElementsByClassName('install_area')[0]; }
-    else
-        { divAppDown = document.getElementsByClassName('app_install')[0]; }
-
-    btnDownChild.innerHTML = getButton(appState[appState.length-1], apkDownloadURL, btnStrings.downloadAPK);
-    // Remove all the current download buttons
-    while (divAppDown.hasChildNodes()) { divAppDown.removeChild(divAppDown.firstChild); }
-    // Add the custom APK download button
-    divAppDown.appendChild(btnDownChild);
-    
-    // Parse the JSON
-    getJSON();
-    // Show a loading animation
-    loadingAnimationChild           = document.createElement('div');
-    loadingAnimationChild.innerHTML = '<img src="'+ icons.loading.imagen +'" />';
-    divAppDown.appendChild(loadingAnimationChild);
-    setTimeout(function(){
+// Replace the Aptoide "download" button for one that links to the direct APK donwload
+var createJSONButton = function() {
     // Remove the loading animation
     divAppDown.removeChild(divAppDown.lastChild);
-    var obbQty = 1;
-    if (rawJSON.hasOwnProperty('obb'))
-        {
-            // Add as many obb download buttons as OBBs exists in the App JSON
-            for (var prop in rawJSON.obb) {
-                var heightFix       = null;
-                var btnJSONChild    = document.createElement('div');
-                
+    btnJSONChild.innerHTML = '<a href="' + appJSONURL + '">JSON</a>';
 
-                if (isMobile) { heightFix = '</style><span style="height: 4px; display: block;"></span>'; }
-                btnJSONChild.innerHTML = '&nbsp;&nbsp;<style> .iconObb { width: 40px; height: 20px; margin-bottom: -3px; display: inline-block; } .json { color: ' + icons.obb.color + '; text-decoration: none; } .json a:link { color: ' + icons.obb.color + '; text-decoration: none; } .json a:visited { color: ' + icons.obb.color + '; text-decoration: none; } .json a:hover { color: #000000; text-decoration: none !important; }</style>' + heightFix + '<a href="' + rawJSON.obb[prop].path + '" class="json"><img class="iconObb" src="'+ icons.obb.imagen +'" /><span style="color: ' + icons.obb.color + '; font-size: ' + (isMobile ? 1.8 : 0.9) + 'em;">' + obbQty + '</span></a>';
-                divAppDown.appendChild(btnJSONChild);
-                obbQty++;
-            }
-        }
-    },5000);
+    if (isMobile)
+    {
+        btnDownChild.innerHTML = getButton(appState, rawJSON['data']['file']['path'], btnStrings.downloadAPK);
+        btnDownChild.setAttribute("style", "height: auto; width: auto;");
+
+        // Add the custom APK download button
+        divAppDown.appendChild(btnDownChild);
+        // Customize the btnJSONChild
+        btnJSONChild.innerHTML = '<div class="aptweb-button aptweb-button--big aptweb-button--green"><span><a href="' + appJSONURL + '">JSON</a></span></div>';
+    }
+    
+    if (JSON.stringify(rawJSON['data']['obb']) != 'null')
+    {
+
+        if (isMobile)
+            divAppDown.parentNode.insertBefore(btnJSONChild, divAppDown.nextSibling);
+        else
+            divAppDown.appendChild(btnJSONChild);
+    }
 }
-
-// Execute the function
-downloadButton();
 
 /*  FUENTES/RECURSOS
 http://upload.wikimedia.org/wikipedia/commons/3/37/Aptoide_Logo.png
+https://regex101.com/
 http://www.javascripter.net/faq/rgbtohex.htm
 http://icons8.com/web-app/for/all/download
 http://dataurl.net/#dataurlmaker
@@ -287,11 +375,17 @@ http://www.developingwebs.net/html/hexgen.php
 http://www.w3schools.com/jsref/jsref_trim_string.asp
 http://www.w3schools.com/js/js_timing.asp
 http://www.w3schools.com/jsref/jsref_obj_regexp.asp
+https://www.w3schools.com/jsref/met_element_setattribute.asp
 http://www.w3schools.com/js/js_cookies.asp
 http://www.w3schools.com/js/js_popup.asp
+http://stackoverflow.com/questions/3466356/alert-json-object
+http://stackoverflow.com/questions/3172985/javascript-use-variable-in-string-match
+http://stackoverflow.com/questions/9496427/get-elements-by-attribute-when-queryselectorall-is-not-available-without-using-l
+http://stackoverflow.com/questions/2934137/how-to-insert-an-element-between-the-two-elements-dynamically
 http://stackoverflow.com/questions/5671451/creating-a-javascript-cookie-on-a-domain-and-reading-it-across-sub-domains
 http://stackoverflow.com/questions/2155737/remove-css-class-from-element-with-javascript-no-jquery
 http://stackoverflow.com/questions/8074295/is-there-a-way-to-load-a-xml-file-from-another-domain-using-just-javascript
+http://stackoverflow.com/questions/3926451/how-to-match-but-not-capture-part-of-a-regex
 http://stackoverflow.com/questions/17883692/how-to-set-time-delay-in-javascript
 http://stackoverflow.com/questions/10125561/yql-request-not-working-when-using-url
 http://stackoverflow.com/questions/859024/how-can-i-use-jquery-in-greasemonkey
