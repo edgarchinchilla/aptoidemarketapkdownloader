@@ -7,9 +7,9 @@
 // @author          edgerch@live
 // @include         *.store.aptoide.com/*
 // @include         *.aptoide.com/*
-// @version         9.0
+// @version         9.1
 // @released        2014-10-10
-// @updated         2017-03-15
+// @updated         2017-03-20
 // @encoding        utf-8
 // @homepageURL     https://github.com/edgarchinchilla/aptoidemarketapkdownloader#readme
 // @supportURL      https://github.com/edgarchinchilla/aptoidemarketapkdownloader/issues
@@ -54,6 +54,7 @@ var appFileNameExtended     = null;
 var appObbFiles             = null;
 var apkDownloadURL          = null;
 var appJSONURL              = null;
+var homeOrSearchPage        = null;
 
 /*
  * Aptoide API (v7)
@@ -76,26 +77,6 @@ var domainWebService    = 'https://ws2.aptoide.com/api/7/getAppMeta?';
  // apkid   Application package ID (example: com.mystuff.android.myapp)
  // apkversion  Application version (example: 1.4.2)
  // mode    Return mode/format ('xml' or 'json')
-
-/*
- * GLOBAL CHECKS
- */
-
-// Determine if we are in the mobile version of the site
-// Even if the URL in the browser ends with *aptoide.com, javascript retrieves *aptoide.com/
-try
-    {
-        regEx1 = new RegExp(protocol + ':\/\/[A-Za-z0-9.-_]*aptoide.com\/$', 'gi');
-        var mobileMatch = window.location.toString().match(regEx1) || [];
-        if (mobileMatch.length > 0) { isMobile = true; }
-        else
-        {
-            mobileMatch = window.location.toString().match(/aptoide.com\/[a-z]*\/[a-z]*\/[a-zA-Z0-9-_.]*/gi) || [];
-            if (mobileMatch.length == 0) { isMobile = true; }
-        }
-    }
-catch(err)
-    { isMobile = false; }
 
 /*
  * STYLE & LANG STUFF
@@ -128,67 +109,95 @@ loadingAnimationChild.innerHTML = '<img src="'+ icons.loading.imagen +'" />';
 btnStrings = getLangStrings(userLangCode)
 
 /*
- * APTOIDE DESKTOP AND MOBILE SPECIFIC BEHAVIOR
+ * GLOBAL CHECKS
  */
 
-// DESKTOP
-if (!isMobile)
-    {
-        // Get the App MD5
-        md5 = src.match(/MD5:<\/strong> [A-Za-z0-9]*/).toString().slice(14);
-        // Determine the store name
-        regEx1 = new RegExp(protocol + ':\/\/[A-Za-z0-9-_]*\.', 'gi');
-        regEx2 = new RegExp(protocol + ':\/\/', 'gi');
-        storeName = window.location.toString().match(regEx1).toString().replace(regEx2,'').replace(/.$/,'');
-        // Determine the Application version
-        appVer = document.getElementsByClassName('app_meta')[0].innerHTML.split("\n")[4].match(/<\/b>[a-zA-Z0-9-_.]*/gi).toString().split('>')[1].toString();
-        // Determine the App state
-        appState = src.match(/app_install [a-z]* [a-z]*/).toString().toLowerCase().split(' ');
-        appState = appState[appState.length-1].toString();
-        // Update the download link to include the store
-        domainDownload = domainDownload + storeName + '/';
-        // construct the apk filename with the format 'nombreapp-xxx-xxxxxxxx-'
-        appFileNameExtended = url[url.length-4].toString().replace(/\./g, '-').replace(/_/g, '-').toLowerCase() + '-' + url[url.length-3] + '-' + url[url.length-2] + '-';
-        // APP Full download URL
-        apkDownloadURL = domainDownload + appFileNameExtended + md5 + '.apk';
-        // JSON URL (App Metadata)
-        appJSONURL = domainWebService + "store_name=" + storeName + "&package_name=" + url[url.length-4].toString() + "&apk_md5sum=" + md5;
-        // Get the Aptoide Download Button Block
-        divAppDown = document.getElementsByClassName('app_install')[0];
-        // Remove all the current download buttons
-        while (divAppDown.hasChildNodes()) { divAppDown.removeChild(divAppDown.firstChild); }
-        btnDownChild.innerHTML = getButton(appState, apkDownloadURL, btnStrings.downloadAPK);
-        // Add the custom APK download button
-        divAppDown.appendChild(btnDownChild);
-        // Show a loading animation
-        divAppDown.appendChild(loadingAnimationChild);
-        // Read the App Information and Create the download buttons
-        getJSON(appJSONURL);
-    }
-// MOBILE
-else
-    {
-        var appMetaData = null;
-        // Determine the store name
-        storeName = getAllElementsWithAttribute('itemscope')[0].innerHTML.match(/"header__store-name">[a-zA-Z0-9-_.]*/gi).toString().split('>')[1].toString();
-        // Determine the Application version
-        appVer = document.getElementsByClassName('header__stats__item')[1].getElementsByTagName('span')[1].toString();
-        // Determine the App ID
-        appId = document.getElementsByClassName('aptweb-button--big')[0].getElementsByTagName('span')[0].innerHTML.match(/app_id=[0-9]*/gi).toString().split('=')[1];
-        // Determine the App state
-        appState = getAllElementsWithAttribute('itemscope')[0].innerHTML.match(/data-popup-badge="badge-[a-zA-Z0-9]*(?=")/gi).toString().split('-');
-        appState = appState[appState.length-1].toString();
-        // JSON URL (App Metadata)
-        appJSONURL = domainWebService + "store_name=" + storeName + "&app_id=" + appId;
-        // Get the Aptoide Download Button Block
-        divAppDown = document.getElementsByClassName('aptweb-button--big')[0];
-        // Remove all the current download buttons
-        while (divAppDown.hasChildNodes()) { divAppDown.removeChild(divAppDown.firstChild); }
-        // Show a loading animation
-        divAppDown.appendChild(loadingAnimationChild);
-        // Read the App Information and Create the download buttons
-        getJSON(appJSONURL);
-    }
+// ONLY EXECUTY THE COMPLETE SCRIPT BEHAVIOR IF THE CURRENT PAGE IS OF AN APP,
+// OTHERWISE (POSIBBLY WE ARE IN THE HOMEPAGE, SEARCHPAGE, ETC) DO NOTHING.
+regEx1 = new RegExp(protocol + ':\/\/[A-Za-z]*.?aptoide.com\/.*', 'gi');
+var homeOrSearchPage = window.location.toString().match(regEx1) || [];
+if (homeOrSearchPage.length > 0) {
+    // Do nothing, whe are in the home, search, etc. page
+} else {
+    // Determine if we are in the mobile version of the site
+    // Even if the URL in the browser ends with *aptoide.com, javascript retrieves *aptoide.com/
+    try
+        {
+            regEx1 = new RegExp(protocol + ':\/\/[A-Za-z0-9.-_]*aptoide.com\/$', 'gi');
+            var mobileMatch = window.location.toString().match(regEx1) || [];
+            if (mobileMatch.length > 0) { isMobile = true; }
+            else
+            {
+                mobileMatch = window.location.toString().match(/aptoide.com\/[a-z]*\/[a-z]*\/[a-zA-Z0-9-_.]*/gi) || [];
+                if (mobileMatch.length == 0) { isMobile = true; }
+            }
+        }
+    catch(err)
+        { isMobile = false; }
+
+    /*
+     * APTOIDE DESKTOP AND MOBILE SPECIFIC BEHAVIOR
+     */
+
+    // DESKTOP
+    if (!isMobile)
+        {
+            // Get the App MD5
+            md5 = src.match(/MD5:<\/strong> [A-Za-z0-9]*/).toString().slice(14);
+            // Determine the store name
+            regEx1 = new RegExp(protocol + ':\/\/[A-Za-z0-9-_]*\.', 'gi');
+            regEx2 = new RegExp(protocol + ':\/\/', 'gi');
+            storeName = window.location.toString().match(regEx1).toString().replace(regEx2,'').replace(/.$/,'');
+            // Determine the Application version
+            appVer = document.getElementsByClassName('app_meta')[0].innerHTML.split("\n")[4].match(/<\/b>[a-zA-Z0-9-_.]*/gi).toString().split('>')[1].toString();
+            // Determine the App state
+            appState = src.match(/app_install [a-z]* [a-z]*/).toString().toLowerCase().split(' ');
+            appState = appState[appState.length-1].toString();
+            // Update the download link to include the store
+            domainDownload = domainDownload + storeName + '/';
+            // construct the apk filename with the format 'nombreapp-xxx-xxxxxxxx-'
+            appFileNameExtended = url[url.length-4].toString().replace(/\./g, '-').replace(/_/g, '-').toLowerCase() + '-' + url[url.length-3] + '-' + url[url.length-2] + '-';
+            // APP Full download URL
+            apkDownloadURL = domainDownload + appFileNameExtended + md5 + '.apk';
+            // JSON URL (App Metadata)
+            appJSONURL = domainWebService + "store_name=" + storeName + "&package_name=" + url[url.length-4].toString() + "&apk_md5sum=" + md5;
+            // Get the Aptoide Download Button Block
+            divAppDown = document.getElementsByClassName('app_install')[0];
+            // Remove all the current download buttons
+            while (divAppDown.hasChildNodes()) { divAppDown.removeChild(divAppDown.firstChild); }
+            btnDownChild.innerHTML = getButton(appState, apkDownloadURL, btnStrings.downloadAPK);
+            // Add the custom APK download button
+            divAppDown.appendChild(btnDownChild);
+            // Show a loading animation
+            divAppDown.appendChild(loadingAnimationChild);
+            // Read the App Information and Create the download buttons
+            getJSON(appJSONURL);
+        }
+    // MOBILE
+    else
+        {
+            var appMetaData = null;
+            // Determine the store name
+            storeName = getAllElementsWithAttribute('itemscope')[0].innerHTML.match(/"header__store-name">[a-zA-Z0-9-_.]*/gi).toString().split('>')[1].toString();
+            // Determine the Application version
+            appVer = document.getElementsByClassName('header__stats__item')[1].getElementsByTagName('span')[1].toString();
+            // Determine the App ID
+            appId = document.getElementsByClassName('aptweb-button--big')[0].getElementsByTagName('span')[0].innerHTML.match(/app_id=[0-9]*/gi).toString().split('=')[1];
+            // Determine the App state
+            appState = getAllElementsWithAttribute('itemscope')[0].innerHTML.match(/data-popup-badge="badge-[a-zA-Z0-9]*(?=")/gi).toString().split('-');
+            appState = appState[appState.length-1].toString();
+            // JSON URL (App Metadata)
+            appJSONURL = domainWebService + "store_name=" + storeName + "&app_id=" + appId;
+            // Get the Aptoide Download Button Block
+            divAppDown = document.getElementsByClassName('aptweb-button--big')[0];
+            // Remove all the current download buttons
+            while (divAppDown.hasChildNodes()) { divAppDown.removeChild(divAppDown.firstChild); }
+            // Show a loading animation
+            divAppDown.appendChild(loadingAnimationChild);
+            // Read the App Information and Create the download buttons
+            getJSON(appJSONURL);
+        }
+}
 
 /*
  * PUBLIC FUNCTIONS
