@@ -6,9 +6,9 @@
 // @description:es  Descarga Apps desde Aptoide directamente a tu PC
 // @author          edgerch@live
 // @include         *.aptoide.com/*
-// @version         9.2
+// @version         9.3
 // @released        2014-10-10
-// @updated         2017-03-22
+// @updated         2017-03-30
 // @encoding        utf-8
 // @homepageURL     https://github.com/edgarchinchilla/aptoidemarketapkdownloader#readme
 // @supportURL      https://github.com/edgarchinchilla/aptoidemarketapkdownloader/issues
@@ -82,11 +82,11 @@ var icons = {
     
 // Lang strings
 var langStrings = {
-        es      : { downloadAPK : 'Descargar APK', viewJSON : 'Ver JSON' },
-        en      : { downloadAPK : 'Download APK', viewJSON : 'View JSON' },
-        de      : { downloadAPK : 'Herunterladen APK', viewJSON : 'Sehen JSON' },
-        it      : { downloadAPK : 'Scarica APK', viewJSON : 'Vedere JSON' },
-        fr      : { downloadAPK : 'Télécharger APK', viewJSON : 'Voir JSON' }
+        es      : { downloadAPK : 'Descargar APK', viewJSON : 'Ver JSON de información' },
+        en      : { downloadAPK : 'Download APK', viewJSON : 'View JSON information' },
+        de      : { downloadAPK : 'Herunterladen APK', viewJSON : 'JSON-Informationen anzeigen' },
+        it      : { downloadAPK : 'Scarica APK', viewJSON : 'Visualizzare le informazioni JSON' },
+        fr      : { downloadAPK : 'Télécharger APK', viewJSON : 'Voir les informations JSON' }
     };
 
 // Set the default loading animation
@@ -305,9 +305,9 @@ function getButton(currentState, downloadURL, appDownloadString) {
     
     // Formated download button
     if (isMobile)
-        retButton = '<style> .icon { width: 20px; height: 20px; } .lnk { color: ' + col + '; text-decoration: none; } .lnk a:link { color: ' + col + '; text-decoration: none; } .lnk a:hover { color: #000000; text-decoration: none !important; }</style><span><a class="lnk" href="' + downloadURL + '" download="' + url[url.length-1] + ' ' + appVer + '.apk' + '"><img class="icon" src="'+ img +'" />&nbsp;' + appDownloadString + '</a></span>';
+        retButton = '<span><a style="color: #FFF; text-decoration: none;" href="' + downloadURL + '" id="show_app_install_data" download="' + url[url.length-1] + ' ' + appVer + '.apk' + '"><img style="width: 20px; height: 20px;" src="'+ img +'" />&nbsp;' + appDownloadString + '&nbsp;<div class="app_install_badge"></div></a></span>';
     else
-        retButton = '<style> .icon { width: 20px; height: 20px; } .lnk { color: ' + col + '; text-decoration: none; } .lnk a:link { color: ' + col + '; text-decoration: none; } .lnk a:hover { color: #000000; text-decoration: none !important; }</style><font size="4" color="#00FF33"><a class="lnk" href="' + downloadURL + '" download="' + url[url.length-1] + ' ' + appVer + '.apk' + '"><img class="icon" src="'+ img +'" />&nbsp;' + appDownloadString + '&nbsp;<div class="app_install_badge"></div></a></font>';
+        retButton = '<font size="4"><a style="color: #FFF; text-decoration: none;" href="' + downloadURL + '" id="show_app_install_data" download="' + url[url.length-1] + ' ' + appVer + '.apk' + '"><img style="width: 20px; height: 20px;" src="'+ img +'" />&nbsp;' + appDownloadString + '&nbsp;<div class="app_install_badge"></div></a></font>';
 
     return retButton;
 }
@@ -338,17 +338,20 @@ function getJSON(jsonURL) {
 var createJSONButton = function() {
     // Remove the loading animation
     divAppDown.removeChild(divAppDown.lastChild);
-    btnJSONChild.innerHTML = '<a href="' + appJSONURL + '">JSON</a>';
 
     if (isMobile)
     {
+        // Construct the APK download button
         btnDownChild.innerHTML = getButton(appState, rawJSON['data']['file']['path'], btnStrings.downloadAPK);
-        btnDownChild.setAttribute("style", "height: auto; width: auto;");
-
         // Add the custom APK download button
         divAppDown.appendChild(btnDownChild);
-        // Customize the btnJSONChild
-        btnJSONChild.innerHTML = '<div class="aptweb-button aptweb-button--big aptweb-button--green"><span><a href="' + appJSONURL + '">JSON</a></span></div>';
+        // Customize the btnJSONChild for Mobile
+        btnJSONChild.innerHTML = '<div class="aptweb-button aptweb-button--big aptweb-button--green"><span><a href="' + appJSONURL + '" style="color: #FFF;">' + btnStrings.viewJSONFile + '</a></span></div>';
+    }
+    else
+    {
+        // Customize the btnJSONChild for Desktop
+        btnJSONChild.innerHTML = '<a href="' + appJSONURL + '" id="show_app_malware_data" data-fancybox class="app_install_badge_label">' + btnStrings.viewJSONFile + '</a>';
     }
     
     if (JSON.stringify(rawJSON['data']['obb']) != 'null')
