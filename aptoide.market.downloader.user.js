@@ -6,9 +6,9 @@
 // @description:es  Descarga Apps desde Aptoide directamente a tu PC
 // @author          edgerch@live
 // @include         *.aptoide.com/*
-// @version         9.3
+// @version         9.3.1
 // @released        2014-10-10
-// @updated         2017-03-30
+// @updated         2017-03-31
 // @encoding        utf-8
 // @homepageURL     https://github.com/edgarchinchilla/aptoidemarketapkdownloader#readme
 // @supportURL      https://github.com/edgarchinchilla/aptoidemarketapkdownloader/issues
@@ -305,9 +305,9 @@ function getButton(currentState, downloadURL, appDownloadString) {
     
     // Formated download button
     if (isMobile)
-        retButton = '<span><a style="color: #FFF; text-decoration: none;" href="' + downloadURL + '" id="show_app_install_data" download="' + url[url.length-1] + ' ' + appVer + '.apk' + '"><img style="width: 20px; height: 20px;" src="'+ img +'" />&nbsp;' + appDownloadString + '&nbsp;<div class="app_install_badge"></div></a></span>';
+        retButton = '<span><a style="color: #FFF; text-decoration: none;" href="' + downloadURL + '" download="' + url[url.length-1] + ' ' + appVer + '.apk' + '"><img style="width: 20px; height: 20px;" src="'+ img +'" />&nbsp;' + appDownloadString + '&nbsp;<div class="app_install_badge"></div></a></span>';
     else
-        retButton = '<font size="4"><a style="color: #FFF; text-decoration: none;" href="' + downloadURL + '" id="show_app_install_data" download="' + url[url.length-1] + ' ' + appVer + '.apk' + '"><img style="width: 20px; height: 20px;" src="'+ img +'" />&nbsp;' + appDownloadString + '&nbsp;<div class="app_install_badge"></div></a></font>';
+        retButton = '<font size="4"><a style="color: #FFF; text-decoration: none;" href="' + downloadURL + '" download="' + url[url.length-1] + ' ' + appVer + '.apk' + '"><img style="width: 20px; height: 20px;" src="'+ img +'" />&nbsp;' + appDownloadString + '&nbsp;<div class="app_install_badge"></div></a></font>';
 
     return retButton;
 }
