@@ -6,7 +6,7 @@
 // @description:es  Descarga Apps desde Aptoide directamente a tu PC
 // @author          edgerch@live
 // @include         *.aptoide.com/*
-// @version         9.4.1
+// @version         9.5
 // @released        2014-10-10
 // @updated         2017-05-06
 // @encoding        utf-8
@@ -112,11 +112,12 @@ if (homeOrSearchPage.length > 0) {
     // Even if the URL in the browser ends with *aptoide.com, javascript retrieves *aptoide.com/
     try
         {
-            regEx1 = new RegExp(protocol + ':\/\/[A-Za-z0-9.-_]*aptoide.com\/$', 'gi');
+            regEx1 = new RegExp(protocol + ':\/\/(a-z|A-Z|0-9|-|.)*.aptoide.com\/$', 'gi');
             var mobileMatch = window.location.toString().match(regEx1) || [];
-            if (mobileMatch.length > 0) { isMobile = true; }
-            else
+            if (mobileMatch.length > 0)
             {
+                isMobile = true;
+            } else {
                 mobileMatch = window.location.toString().match(/aptoide.com\/[a-z]*\/[a-z]*\/[a-zA-Z0-9-_.]*/gi) || [];
                 if (mobileMatch.length == 0) { isMobile = true; }
             }
@@ -168,7 +169,7 @@ if (homeOrSearchPage.length > 0) {
     else
         {
             // Show site Scope
-            console.debug('APTOIDE: Desktop');
+            console.debug('APTOIDE: Mobile');
             // Determine the store name
             storeName = getAllElementsWithAttribute('itemscope')[0].innerHTML.match(/"header__store-name">[a-zA-Z0-9-_.]*/gi).toString().split('>')[1].toString();
             // Determine the Application version
@@ -180,6 +181,8 @@ if (homeOrSearchPage.length > 0) {
             appState = appState[appState.length-1].toString();
             // JSON URL (App Metadata)
             appJSONURL = domainWebService + "store_name=" + storeName + "&app_id=" + appId;
+            // Remove the "OnClick" event to force direct download
+            document.getElementsByClassName('aptweb-button--big')[0].removeAttribute("onclick");
             // Get the Aptoide Download Button Block
             divAppDown = document.getElementsByClassName('aptweb-button--big')[0];
             // Remove all the current download buttons
@@ -350,11 +353,12 @@ var createJSONButton = function() {
         btnDownChild.innerHTML = getButton(appState, rawJSON['data']['file']['path'], btnStrings.downloadAPK);
         // Add the custom APK download button
         divAppDown.appendChild(btnDownChild);
+        // Add download link to parent element "href" attribute
+        divAppDown.parentElement.setAttribute("href",rawJSON['data']['file']['path']);
+        divAppDown.parentElement.setAttribute("data-redirect","#");
         // Customize the btnJSONChild for Mobile
         btnJSONChild.innerHTML = '<div class="aptweb-button aptweb-button--big aptweb-button--green"><span><a href="' + appJSONURL + '" style="color: #FFF;">' + btnStrings.viewJSONFile + '</a></span></div>';
-    }
-    else
-    {
+    } else {
         // Customize the btnJSONChild for Desktop
         btnJSONChild.innerHTML = '<a href="' + appJSONURL + '" id="show_app_malware_data" data-fancybox class="app_install_badge_label">' + btnStrings.viewJSONFile + '</a>';
     }
