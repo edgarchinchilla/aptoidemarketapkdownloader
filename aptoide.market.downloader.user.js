@@ -105,6 +105,8 @@ regEx1 = new RegExp(protocol + ':\/\/[A-Za-z]*.?aptoide.com\/.*', 'gi');
 var homeOrSearchPage = window.location.toString().match(regEx1) || [];
 if (homeOrSearchPage.length > 0) {
     // Do nothing, whe are in the home, search, etc. page
+    // Show site Scope
+    console.debug('APTOIDE: Homepage');
 } else {
     // Determine if we are in the mobile version of the site
     // Even if the URL in the browser ends with *aptoide.com, javascript retrieves *aptoide.com/
@@ -129,6 +131,8 @@ if (homeOrSearchPage.length > 0) {
     // DESKTOP
     if (!isMobile)
         {
+            // Show site Scope
+            console.debug('APTOIDE: Desktop');
             // Get the App MD5
             md5 = src.match(/MD5:<\/strong> [A-Za-z0-9]*/).toString().slice(14);
             // Determine the store name
@@ -163,13 +167,14 @@ if (homeOrSearchPage.length > 0) {
     // MOBILE
     else
         {
-            var appMetaData = null;
+            // Show site Scope
+            console.debug('APTOIDE: Desktop');
             // Determine the store name
             storeName = getAllElementsWithAttribute('itemscope')[0].innerHTML.match(/"header__store-name">[a-zA-Z0-9-_.]*/gi).toString().split('>')[1].toString();
             // Determine the Application version
-            appVer = document.getElementsByClassName('header__stats__item')[1].getElementsByTagName('span')[1].toString();
+            appVer = document.getElementsByClassName('header__stats__item')[1].getElementsByTagName('span')[1].innerHTML.toString();
             // Determine the App ID
-            appId = document.getElementsByClassName('aptweb-button--big')[0].getElementsByTagName('span')[0].innerHTML.match(/app_id=[0-9]*/gi).toString().split('=')[1];
+            appId = src.match(/app_id=[0-9]*/gi).toString().split('=')[1];
             // Determine the App state
             appState = getAllElementsWithAttribute('itemscope')[0].innerHTML.match(/data-popup-badge="badge-[a-zA-Z0-9]*(?=")/gi).toString().split('-');
             appState = appState[appState.length-1].toString();
