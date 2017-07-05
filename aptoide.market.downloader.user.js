@@ -6,9 +6,9 @@
 // @description:es  Descarga Apps desde Aptoide directamente a tu PC
 // @author          edgerch@live
 // @include         *.aptoide.com/*
-// @version         9.5
+// @version         9.5.1
 // @released        2014-10-10
-// @updated         2017-05-06
+// @updated         2017-07-05
 // @encoding        utf-8
 // @homepageURL     https://github.com/edgarchinchilla/aptoidemarketapkdownloader#readme
 // @supportURL      https://github.com/edgarchinchilla/aptoidemarketapkdownloader/issues
@@ -171,11 +171,11 @@ if (homeOrSearchPage.length > 0) {
             // Show site Scope
             console.debug('APTOIDE: Mobile');
             // Determine the store name
-            storeName = getAllElementsWithAttribute('itemscope')[0].innerHTML.match(/"header__store-name">[a-zA-Z0-9-_.]*/gi).toString().split('>')[1].toString();
+            storeName = document.getElementsByClassName('header__store-name')[0].innerHTML.toString();
             // Determine the Application version
             appVer = document.getElementsByClassName('header__stats__item')[1].getElementsByTagName('span')[1].innerHTML.toString();
             // Determine the App ID
-            appId = src.match(/app_id=[0-9]*/gi).toString().split('=')[1];
+            appId = getElementAttributeValue('data-redirect').match(/app_id=[0-9]*/gi).toString().split('=')[1];
             // Determine the App state
             appState = getAllElementsWithAttribute('itemscope')[0].innerHTML.match(/data-popup-badge="badge-[a-zA-Z0-9]*(?=")/gi).toString().split('-');
             appState = appState[appState.length-1].toString();
@@ -198,7 +198,7 @@ if (homeOrSearchPage.length > 0) {
  * PUBLIC FUNCTIONS
  */
 
-// Utilities
+// Get an return a list of elements with matching attribute
 function getAllElementsWithAttribute(attribute)
 {
   var matchingElements = [];
@@ -213,7 +213,24 @@ function getAllElementsWithAttribute(attribute)
   }
   return matchingElements;
 }
-    
+
+// Get and return an attribute value
+function getElementAttributeValue(attribute)
+{
+  var attributeValue = null;
+  var matchingElements = [];
+  var allElements = document.getElementsByTagName('*');
+  for (var i = 0, n = allElements.length; i < n; i++)
+  {
+    if (allElements[i].getAttribute(attribute) !== null)
+    {
+      // Element exists with attribute. Add to array.
+      attributeValue = allElements[i].getAttribute(attribute);
+    }
+  }
+  return attributeValue;
+}
+
 // Lang strings generator
 function getLangStrings(langCode) {
     var buttonStrings = new Object();
