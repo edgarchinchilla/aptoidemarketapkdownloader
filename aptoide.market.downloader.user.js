@@ -8,7 +8,7 @@
 // @include         *.aptoide.com/*
 // @version         9.5.2
 // @released        2014-10-10
-// @updated         2017-07-08
+// @updated         2017-07-10
 // @encoding        utf-8
 // @homepageURL     https://github.com/edgarchinchilla/aptoidemarketapkdownloader#readme
 // @supportURL      https://github.com/edgarchinchilla/aptoidemarketapkdownloader/issues
@@ -25,6 +25,8 @@
 //  https://greasyfork.org/es/scripts/6952-aptoide-market-direct-apk-downloader
 // Thanks to the creator of original script:
 //  http://userscripts-mirror.org/scripts/show/180436.html
+// Thanks to the language contributors
+//  RU: BullFFm (https://github.com/bullffm)
 
 /*
  * GLOBAL VARS
