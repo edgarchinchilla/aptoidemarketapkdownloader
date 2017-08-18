@@ -6,9 +6,9 @@
 // @description:es  Descarga Apps desde Aptoide directamente a tu PC
 // @author          edgerch@live
 // @include         *.aptoide.com/*
-// @version         9.5.2
+// @version         9.6.0
 // @released        2014-10-10
-// @updated         2017-07-10
+// @updated         2017-08-17
 // @encoding        utf-8
 // @homepageURL     https://github.com/edgarchinchilla/aptoidemarketapkdownloader#readme
 // @supportURL      https://github.com/edgarchinchilla/aptoidemarketapkdownloader/issues
@@ -56,6 +56,11 @@ var appObbFiles             = null;
 var apkDownloadURL          = null;
 var appJSONURL              = null;
 var homeOrSearchPage        = null;
+
+/*
+ * DEBUG CONTROL
+ */
+var debugEnabled = false;
 
 /*
  * Aptoide API (v7)
@@ -143,19 +148,29 @@ if (homeOrSearchPage.length > 0) {
             regEx1 = new RegExp(protocol + ':\/\/[A-Za-z0-9-_]*\.', 'gi');
             regEx2 = new RegExp(protocol + ':\/\/', 'gi');
             storeName = window.location.toString().match(regEx1).toString().replace(regEx2,'').replace(/.$/,'');
+            // TODO: Debug
+            if (debugEnabled) { console.debug('Store Name: ' + storeName); }
             // Determine the Application version
             appVer = document.getElementsByClassName('app_meta')[0].innerHTML.split("\n")[4].match(/<\/b>[a-zA-Z0-9-_.]*/gi).toString().split('>')[1].toString();
+            // TODO: Debug
+            if (debugEnabled) { console.debug('App Version: ' + appVer); }
             // Determine the App state
             appState = src.match(/app_install [a-z]* [a-z]*/).toString().toLowerCase().split(' ');
             appState = appState[appState.length-1].toString();
+            // TODO: Debug
+            if (debugEnabled) { console.debug('App State: ' + appState); }
             // Update the download link to include the store
             domainDownload = domainDownload + storeName + '/';
             // construct the apk filename with the format 'nombreapp-xxx-xxxxxxxx-'
             appFileNameExtended = url[url.length-4].toString().replace(/\./g, '-').replace(/_/g, '-').toLowerCase() + '-' + url[url.length-3] + '-' + url[url.length-2] + '-';
+            // TODO: Debug
+            if (debugEnabled) { console.debug('App File Name: ' + appFileNameExtended); }
             // APP Full download URL
             apkDownloadURL = domainDownload + appFileNameExtended + md5 + '.apk';
             // JSON URL (App Metadata)
             appJSONURL = domainWebService + "store_name=" + storeName + "&package_name=" + url[url.length-4].toString() + "&apk_md5sum=" + md5;
+            // TODO: Debug
+            if (debugEnabled) { console.debug('JSON Url: ' + appJSONURL); }
             // Get the Aptoide Download Button Block
             divAppDown = document.getElementsByClassName('app_install')[0];
             // Remove all the current download buttons
@@ -175,15 +190,25 @@ if (homeOrSearchPage.length > 0) {
             console.debug('APTOIDE: Mobile');
             // Determine the store name
             storeName = document.getElementsByClassName('header__store-name')[0].innerHTML.toString();
+            // TODO: Debug
+            if (debugEnabled) { console.debug('Store Name: ' + storeName); }
             // Determine the Application version
             appVer = document.getElementsByClassName('header__stats__item')[1].getElementsByTagName('span')[1].innerHTML.toString();
+            // TODO: Debug
+            if (debugEnabled) { console.debug('App Version: ' + appVer); }
             // Determine the App ID
-            appId = getElementAttributeValue('data-redirect').match(/app_id=[0-9]*/gi).toString().split('=')[1];
+            appId = getElementAttributeValue('data-popup-url').match(/app_id=[0-9]*/gi).toString().split('=')[1];
+            // TODO: Debug
+            if (debugEnabled) { console.debug('App ID: ' + appId); }
             // Determine the App state
             appState = getAllElementsWithAttribute('itemscope')[0].innerHTML.match(/data-popup-badge="badge-[a-zA-Z0-9]*(?=")/gi).toString().split('-');
             appState = appState[appState.length-1].toString();
+            // TODO: Debug
+            if (debugEnabled) { console.debug('App State: ' + appState); }
             // JSON URL (App Metadata)
             appJSONURL = domainWebService + "store_name=" + storeName + "&app_id=" + appId;
+            // TODO: Debug
+            if (debugEnabled) { console.debug('JSON Url: ' + appJSONURL); }
             // Remove the "OnClick" event to force direct download
             document.getElementsByClassName('aptweb-button--big')[0].removeAttribute("onclick");
             // Get the Aptoide Download Button Block
