@@ -6,9 +6,9 @@
 // @description:es  Descarga Apps desde Aptoide directamente a tu PC
 // @author          edgerch@live
 // @include         *.aptoide.com/*
-// @version         9.6.0
+// @version         9.6.1
 // @released        2014-10-10
-// @updated         2017-08-17
+// @updated         2017-11-29
 // @encoding        utf-8
 // @homepageURL     https://github.com/edgarchinchilla/aptoidemarketapkdownloader#readme
 // @supportURL      https://github.com/edgarchinchilla/aptoidemarketapkdownloader/issues
@@ -16,7 +16,7 @@
 // @downloadURL     https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/aptoide.market.downloader.user.js
 // @icon            http://aptoidapkinstaller.com/wp-content/uploads/2017/03/cropped-Untitled-3-1-300x300.png
 // @grant           metadata
-// @grant           GM_xmlhttpRequest
+// @grant           GM.xmlHttpRequest
 // @license         Creative Commons Attribution License
 // ==/UserScript==
 
@@ -371,7 +371,7 @@ function getButton(currentState, downloadURL, appDownloadString) {
 
 // Get the App JSON using Greasemonkey's CORS
 function getJSON(jsonURL) {
-    var xmlCall = GM_xmlhttpRequest({
+    var xmlCall = GM.xmlHttpRequest({
       method: "GET",
       headers: {"Accept": "application/json"},
       ignoreCache: true,
