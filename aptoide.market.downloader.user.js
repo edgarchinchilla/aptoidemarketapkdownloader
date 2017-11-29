@@ -6,7 +6,7 @@
 // @description:es  Descarga Apps desde Aptoide directamente a tu PC
 // @author          edgerch@live
 // @include         *.aptoide.com/*
-// @version         9.6.1
+// @version         9.6.2
 // @released        2014-10-10
 // @updated         2017-11-29
 // @encoding        utf-8
@@ -14,7 +14,7 @@
 // @supportURL      https://github.com/edgarchinchilla/aptoidemarketapkdownloader/issues
 // @updateURL       https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/aptoide.market.downloader.user.js
 // @downloadURL     https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/aptoide.market.downloader.user.js
-// @icon            http://aptoidapkinstaller.com/wp-content/uploads/2017/03/cropped-Untitled-3-1-300x300.png
+// @icon            https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/resources/aptoide-icon-2017-t1-300x300.png
 // @grant           metadata
 // @grant           GM.xmlHttpRequest
 // @license         Creative Commons Attribution License
