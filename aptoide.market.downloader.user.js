@@ -94,7 +94,8 @@ var langStrings = {
         de      : { downloadAPK : 'Herunterladen APK', viewJSON : 'JSON-Informationen anzeigen' },
         it      : { downloadAPK : 'Scarica APK', viewJSON : 'Visualizzare le informazioni JSON' },
         fr      : { downloadAPK : 'Télécharger APK', viewJSON : 'Voir les informations JSON' },
-        ru      : { downloadAPK : 'Скачать APK', viewJSON : 'Просмотр JSON-информации' }
+        ru      : { downloadAPK : 'Скачать APK', viewJSON : 'Просмотр JSON-информации' },
+        pl      : { downloadAPK : 'Pobierz APK', viewJSON : 'Wyswietl informacje JSON' }
     };
 
 // Set the default loading animation
