@@ -287,6 +287,7 @@ function getElementAttributeValue(attribute)
 }
 
 // Lang strings generator
+// LANGS List: https://gist.github.com/JamieMason/3748498
 function getLangStrings(langCode) {
     var buttonStrings = new Object();
     
