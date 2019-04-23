@@ -6,9 +6,9 @@
 // @description:es  Descarga Apps desde Aptoide directamente a tu PC
 // @author          edgerch@live
 // @include         *.aptoide.com/*
-// @version         9.7.0
+// @version         9.7.1
 // @released        2014-10-10
-// @updated         2019-04-22
+// @updated         2019-04-23
 // @encoding        utf-8
 // @homepageURL     https://github.com/edgarchinchilla/aptoidemarketapkdownloader#readme
 // @supportURL      https://github.com/edgarchinchilla/aptoidemarketapkdownloader/issues
@@ -355,6 +355,10 @@ function getLangStrings(langCode) {
         case 'ru':
         case 'ru-ru':
             buttonStrings = { downloadAPK : langStrings.ru.downloadAPK, viewJSONFile : langStrings.ru.viewJSON }
+            break;
+        case 'pl':
+        case 'pl-pl':
+            buttonStrings = { downloadAPK : langStrings.pl.downloadAPK, viewJSONFile : langStrings.pl.viewJSON }
             break;
     }
     
