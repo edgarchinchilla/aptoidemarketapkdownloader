@@ -6,7 +6,7 @@
 // @description:es  Descarga Apps desde Aptoide directamente a tu PC
 // @author          edgerch@live
 // @include         *.aptoide.com/*
-// @version         9.7.1
+// @version         9.7.2
 // @released        2014-10-10
 // @updated         2019-04-23
 // @encoding        utf-8
@@ -44,9 +44,10 @@ var domainDownload          = 'http://pool.apk.aptoide.com/';
 var divAppDown              = document.createElement('div');
 var divContainer            = document.createElement('div');
 var btnDownChild            = document.createElement('div');
-var loadingAnimationChild   = document.createElement('div');
+var loadingAnimationChild   = document.createElement('span');
 var btnJSONChild            = document.createElement('div');
 var btnStrings              = null;
+var downBtnStyle            = null;
 var md5                     = null;
 var appVer                  = null;
 var storeName               = null;
@@ -79,14 +80,27 @@ var domainWebService    = 'https://ws2.aptoide.com/api/7/getAppMeta?';
  * STYLE & LANG STUFF
  */
 
-// Trusted: #82CE27, Unknown: #787878, Warning: #D3A22B, Generic: #FFFFFF
+// Icons and Colors
 var icons = {
-        trusted : { color : '#82CE27', imagen : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAA20lEQVRoge3U0QnDMAwEUC0T+zejdKTgDpIRukixR+gIHsH9aBvSxg7Bii1B70CfOe4RMBFyLM7b5LxN0jvYAURbANEWQLQFEG0BRFsA0RZAWozgXIsuQAABBBBAAAGkKSSY2XkbKyDRBXvTAQlmJiKawjDmMDtd8Xo3FyKio5jWfyROYRhLmELXgnh/89AA2cVkuqoQvSBFzE9XNaInJItZdbEQvSEbzKeLi5CAfGHW4SCkIBsMFyEJWTBnIKQhyb1eLzZCA+S0A0R6OCCAAAIIICoOEOnhfwl5AjNcdLJj7fAFAAAAAElFTkSuQmCC' },
-        unknown : { color : '#787878', imagen : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAA0UlEQVRoge3TwQnDMAyFYY2UUbqM8rRNRuhIHcEjpKeACTZNq9gS9P3g60PfwSLsWma2m9kefYc7QrJFSLYIyRYh2SIkW4Rki5ARR3jeiC1CCCGEEEIIIWQwZANQvoUAKACeWSCbiIiqLi1MbwtAWdf1ISJyFTMUAqCo6tLDtLZqhKouZvYKh3zCnLd+Rcz6I11MveVBTIP0MMeWFzEV0sIcW17EdMgZU+dBhEBaGC8iDFJj7kCEQg7MHYhwyJ2PkOjDCSGEEEIISfEIiT78LyFvr8ktYejWvv0AAAAASUVORK5CYII=' },
-        warning : { color : '#D3A22B', imagen : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAA2klEQVRoge3RywnDMBBFUbUTJguVkg4FkwLSS2SvU4JKkBchxoklY/SbgbwLWhkec7Ax6FyeKXqmKH1HdYBoCxBtAaItQLQFiLYA0RYgPY6oeT22AAEEEEAAAQSQnpCJyXmmUAAJnq8PFZCJyRljzOzIpjAHW+F5v9ze385hev+RMDuyOUxma0XMjuzE9NIAOcQktooQoyBZzM9WMWIkJInZbFUhRkN2mM9WLUIC8oXZVoOQguwwtQhJyIppgZCGRM8UWiA0QJo9QKQPBwQQQAABRMUDRPrwv4QsbtM1ei5ekAMAAAAASUVORK5CYII=' },
-        generic : { color : '#FFFFFF', imagen : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAA3UlEQVRoge3WwQ3DIBBEUZdEKenQJaQkl0AJk0NQ5KxthGBh9jD/mmjYd/O2qbZQYt8xnCDREiRagkRLkGgJEi1BoiXIjCNGmrEliMfjnluCeDzuuSWIx+OeW4J4PO65JUhDO4DcAckA3lEge/lvusNUtjKAV/mtCTMbkgGkJ8zD1hmRABwRIFXMzVYXYhXkEWO2uhErIbeY09YQYjXkgjltDSEYkD+M2etGsCAXzCiCCflhPBAA+RMFX8zhMcSGuCUI+3CbIOzDbYKwD7cJwj7cJgj7cJsg7MNttVs/a36ck46gS9MAAAAASUVORK5CYII=' },
-        loading : { color : '#000000', imagen : 'data:image/gif;base64,R0lGODlhKwALAPEAAP///wAAAIKCggAAACH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAKwALAAACMoSOCMuW2diD88UKG95W88uF4DaGWFmhZid93pq+pwxnLUnXh8ou+sSz+T64oCAyTBUAACH5BAkKAAAALAAAAAArAAsAAAI9xI4IyyAPYWOxmoTHrHzzmGHe94xkmJifyqFKQ0pwLLgHa82xrekkDrIBZRQab1jyfY7KTtPimixiUsevAAAh+QQJCgAAACwAAAAAKwALAAACPYSOCMswD2FjqZpqW9xv4g8KE7d54XmMpNSgqLoOpgvC60xjNonnyc7p+VKamKw1zDCMR8rp8pksYlKorgAAIfkECQoAAAAsAAAAACsACwAAAkCEjgjLltnYmJS6Bxt+sfq5ZUyoNJ9HHlEqdCfFrqn7DrE2m7Wdj/2y45FkQ13t5itKdshFExC8YCLOEBX6AhQAADsAAAAAAAAAAAA='}
+        trusted  : { color : '#01D300', imagen : 'https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/resources/trusted.png' },
+        unknown  : { color : '#6D6D6D', imagen : 'https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/resources/unknown.png' },
+        warning  : { color : '#DDB03B', imagen : 'https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/resources/warning.png' },
+        critical : { color : '#C9391E', imagen : 'https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/resources/critical.png' },
+        generic  : { color : '#FFFFFF', imagen : 'https://github.com/edgarchinchilla/aptoidemarketapkdownloader/raw/master/resources/download.gif' },
+        loading  : { color : '#000000', imagen : 'data:image/gif;base64,R0lGODlhKwALAPEAAP///wAAAIKCggAAACH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAKwALAAACMoSOCMuW2diD88UKG95W88uF4DaGWFmhZid93pq+pwxnLUnXh8ou+sSz+T64oCAyTBUAACH5BAkKAAAALAAAAAArAAsAAAI9xI4IyyAPYWOxmoTHrHzzmGHe94xkmJifyqFKQ0pwLLgHa82xrekkDrIBZRQab1jyfY7KTtPimixiUsevAAAh+QQJCgAAACwAAAAAKwALAAACPYSOCMswD2FjqZpqW9xv4g8KE7d54XmMpNSgqLoOpgvC60xjNonnyc7p+VKamKw1zDCMR8rp8pksYlKorgAAIfkECQoAAAAsAAAAACsACwAAAkCEjgjLltnYmJS6Bxt+sfq5ZUyoNJ9HHlEqdCfFrqn7DrE2m7Wdj/2y45FkQ13t5itKdshFExC8YCLOEBX6AhQAADsAAAAAAAAAAAA='}
     };
+    // Buttons generic style definition
+    downBtnStyle = "text-align: center; " +
+                   "color: #FFF; " +
+                   "box-shadow: none; " +
+                   "border: none; " +
+                   "display: -webkit-box; " +
+                   "display: -ms-flexbox; " +
+                   "display: flex; " +
+                   "-webkit-box-pack: center; " +
+                   "-ms-flex-pack: center; " +
+                   "justify-content: center; " +
+                   "margin-bottom: 16px; ";
     
 // Lang strings
 var langStrings = {
@@ -100,7 +114,8 @@ var langStrings = {
     };
 
 // Set the default loading animation
-loadingAnimationChild.innerHTML = '<img src="'+ icons.loading.imagen +'" />';
+loadingAnimationChild.innerHTML = '<img style="border: none;" src="'+ icons.loading.imagen +'" />';
+loadingAnimationChild.setAttribute('style', downBtnStyle);
 
 // Set the lang strings for the current user language
 btnStrings = getLangStrings(userLangCode)
@@ -208,7 +223,7 @@ if (homeOrSearchPage.length > 0) {
             // TODO: Debug
             if (debugEnabled) { console.debug('JSON Url: ' + appJSONURL); }
             // Get the Aptoide Download Button Block
-            divAppDown.setAttribute('class', "customDownloadBtn aptweb-button aptweb-button--big aptweb-button--green");
+            divAppDown.setAttribute('class', "customDownloadBtn aptweb-button aptweb-button--big");
             document.getElementsByClassName('aptweb-button--app')[0].parentNode.removeChild(document.getElementsByClassName('aptweb-button--app')[0]);
             divContainer = document.getElementsByClassName('text-box text-box--element')[0];
             divContainer.parentNode.insertBefore(divAppDown, divContainer.nextSibling);
@@ -368,36 +383,35 @@ function getLangStrings(langCode) {
 
 // Generate a custom download button for every app state
 function getButton(currentState, downloadURL, appDownloadString) {
-    var col         = null;
     var img         = null;
-    var mobileBtn   = null;
     var retButton   = null;
 
     if (currentState == 'trusted') {
-        col = icons.generic.color;
-        img = icons.generic.imagen; 
-        if (isMobile)
-            mobileBtn = 'btn app_install trusted';
+        downBtnStyle = downBtnStyle + "background-color: " + icons.trusted.color + "; ";
+        img = icons.generic.imagen;
     }
     if (currentState == 'unknown') {
-        col = icons.generic.color;
+        downBtnStyle = downBtnStyle + "background-color: " + icons.unknown.color + "; ";
         img = icons.generic.imagen;
-        if (isMobile)
-            mobileBtn = 'btn app_install unknown'; 
     }
     if ((currentState == 'warn') || (currentState == 'warning')) {
-        col = icons.generic.color;
+        downBtnStyle = downBtnStyle + "background-color: " + icons.warning.color + "; ";
         img = icons.generic.imagen;
-        if (isMobile)
-            mobileBtn = 'btn app_install warning';
     }
+    if (currentState == 'critical') {
+        downBtnStyle = downBtnStyle + "background-color: " + icons.critical.color + "; ";
+        img = icons.generic.imagen;
+    }
+    if (null == img) {
+        downBtnStyle = downBtnStyle + "background-color: " + icons.generic.color + "; ";
+        img = icons.generic.imagen;
+    }
+
+    if (debugEnabled) { console.debug('Button Style: ' + downBtnStyle); }
     
     // Formated download button
-    if (isMobile)
-        retButton = '<span><a style="color: #FFF; text-decoration: none;" href="' + downloadURL + '" download="' + appFileNameExtended + ' v' + appVer + '.apk' + '"><img style="width: 20px; height: 20px;" src="'+ img +'" />&nbsp;' + appDownloadString + '&nbsp;</a></span>';
-    else
-        retButton = '<font size="4"><a style="color: #FFF; text-decoration: none;" href="' + downloadURL + '" download="' + appFileNameExtended + ' v' + appVer + '.apk' + '"><img style="width: 20px; height: 20px;" src="'+ img +'" />&nbsp;' + appDownloadString + '&nbsp;</a></font>';
-
+    retButton = '<span style="vertical-align: middle;"><a style="color: ' + icons.generic.color + '; text-decoration: none;" href="' + downloadURL + '" download="' + appFileNameExtended + ' v' + appVer + '.apk' + '">' + appDownloadString + '</a></span>';
+    
     return retButton;
 }
 
@@ -443,11 +457,15 @@ var createJSONButton = function() {
         divAppDown.appendChild(btnDownChild);
         divAppDown.parentElement.setAttribute("href",rawJSON['data']['file']['path']);
         // Customize the btnJSONChild for Mobile
-        btnJSONChild.innerHTML = '<div class="aptweb-button aptweb-button--big aptweb-button--green"><span><a href="' + appJSONURL + '" style="color: #FFF;">' + btnStrings.viewJSONFile + '</a></span></div>';
+        btnJSONChild.innerHTML = '<div class="aptweb-button aptweb-button--big" style="' + downBtnStyle + '"><span><a href="' + appJSONURL + '" style="color: #FFF;">' + btnStrings.viewJSONFile + '</a></span></div>';
     } else {
         // Customize the btnJSONChild for Desktop
         btnJSONChild.innerHTML = '<a href="' + appJSONURL + '" id="show_app_malware_data" data-fancybox class="app_install_badge_label">' + btnStrings.viewJSONFile + '</a>';
     }
+
+    // Apply button customization
+    divAppDown.setAttribute('style', downBtnStyle);
+    if (debugEnabled) { console.debug('Download Button: ' + divAppDown); }
     
     // If the APP has obb files, show a button to see its JSON Info Page
     if (JSON.stringify(rawJSON['data']['obb']) != 'null') {
@@ -455,9 +473,8 @@ var createJSONButton = function() {
             divAppDown.parentNode.insertBefore(btnJSONChild, divAppDown.nextSibling);
         else
             divAppDown.appendChild(btnJSONChild);
+        if (debugEnabled) { console.debug('JSON Button: ' + btnJSONChild); }
     }
-
-    if (debugEnabled) { console.debug('Site Source: ' + divContainer.innerHTML); }
 }
 
 /*  FUENTES/RECURSOS
@@ -498,4 +515,9 @@ http://www.metamodpro.com/browser-language-codes
 http://userscripts-mirror.org/scripts/review/119798
 https://stackoverflow.com/questions/22191576/javascript-createelement-and-setattribute
 https://stackoverflow.com/questions/4777077/removing-elements-by-class-name
+Example of Trusted, Warning, Critical and Unknown Apps:
+    Trusted:  https://moto-robot-angry-shark.en.aptoide.com/
+    Warning:  https://real-tiger-shark-hungry-attack.en.aptoide.com/
+    Critical: https://com-hoquamind-flamliesai.en.aptoide.com/
+    Unknown:  https://com-devboy-mygame.en.aptoide.com/
     FUENTES/RECURSOS  */
